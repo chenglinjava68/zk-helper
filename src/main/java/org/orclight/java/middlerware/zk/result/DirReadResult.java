@@ -71,41 +71,44 @@ public class DirReadResult {
     private void getAllChildren(String parentPath, int level) {
         try {
             level++;
-            List<String> children = curatorFramework.getChildren().forPath(parentPath);
-            if(children!=null&&children.size()>0) {
-                Map<String,String> childMap = new ConcurrentHashMap<String, String>();
-                for(String path:children) {
-                    String fullPath = parentPath+"/"+path;
-                    System.out.print("level: " + level + " parentpath "+ parentPath+ "; fullpath:"+fullPath+"  ");
+            Stat stat = curatorFramework.checkExists().forPath(parentPath);
+            if(stat!=null) {
+                List<String> children = curatorFramework.getChildren().forPath(parentPath);
+                if(children!=null&&children.size()>0) {
+                    Map<String,String> childMap = new ConcurrentHashMap<String, String>();
+                    for(String path:children) {
+                        String fullPath = parentPath+"/"+path;
+                        System.out.print("level: " + level + " parentpath "+ parentPath+ "; fullpath:"+fullPath+"  ");
 
-                    Stat stat = curatorFramework.checkExists().forPath(fullPath);
-                    if(stat==null) {
-                        System.out.print("no data:" + " parentpath "+ parentPath+ "; fullpath:"+fullPath+"  ");
-                        continue;
-                    } else {
-                        byte[] byteValue = curatorFramework.getData().forPath(fullPath);
-                        String value = byteValue!=null?new String(byteValue):"null";
-                        boolean isEphemeral = stat.getEphemeralOwner()!=0?true:false;
-                        if(isEphemeral) {
-                            ephemeralMap.put(fullPath,value);
-                        }
-                        if("null".equals(value)) {
-                            emptyValueMap.put(fullPath,"null");
-                        }
-                        childMap.put(fullPath,value);
-                        valueMap.put(fullPath,value);
+                        stat = curatorFramework.checkExists().forPath(fullPath);
+                        if(stat==null) {
+                            System.out.print("no data:" + " parentpath "+ parentPath+ "; fullpath:"+fullPath+"  ");
+                            continue;
+                        } else {
+                            byte[] byteValue = curatorFramework.getData().forPath(fullPath);
+                            String value = byteValue!=null?new String(byteValue):"null";
+                            boolean isEphemeral = stat.getEphemeralOwner()!=0?true:false;
+                            if(isEphemeral) {
+                                ephemeralMap.put(fullPath,value);
+                            }
+                            if("null".equals(value)) {
+                                emptyValueMap.put(fullPath,"null");
+                            }
+                            childMap.put(fullPath,value);
+                            valueMap.put(fullPath,value);
 
-                        System.out.println();
-                        getAllChildren(fullPath,level);
+                            System.out.println();
+                            getAllChildren(fullPath,level);
+                        }
                     }
+                    byte[] parentByteValue = curatorFramework.getData().forPath(parentPath);
+                    if(parentByteValue!=null) {
+                        valueMap.put(parentPath,new String(parentByteValue));
+                    } else {
+                        emptyValueMap.put(parentPath,"null");
+                    }
+                    relationMap.put(parentPath,childMap);
                 }
-                byte[] parentByteValue = curatorFramework.getData().forPath(parentPath);
-                if(parentByteValue!=null) {
-                    valueMap.put(parentPath,new String(parentByteValue));
-                } else {
-                    emptyValueMap.put(parentPath,"null");
-                }
-                relationMap.put(parentPath,childMap);
             }
         } catch (Exception e) {
             e.printStackTrace();

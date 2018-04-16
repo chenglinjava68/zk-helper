@@ -2,6 +2,7 @@ package org.orclight.java.middlerware.zk.result;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
+import org.apache.zookeeper.data.Stat;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,18 +32,21 @@ public class DirDeleteResult {
 
     public void deleteDir(String path) {
         try {
-            List<String> childrenList = curatorFramework.getChildren().forPath(path);
-            if(childrenList!=null && childrenList.size()>0) {
-                for(String childPath:childrenList) {
-                    String childrenFullPath = path+"/"+childPath;
-                    deleteDir(childrenFullPath);
+            Stat stat = curatorFramework.checkExists().forPath(path);
+            if(stat!=null) {
+                List<String> childrenList = curatorFramework.getChildren().forPath(path);
+                if(childrenList!=null && childrenList.size()>0) {
+                    for(String childPath:childrenList) {
+                        String childrenFullPath = path+"/"+childPath;
+                        deleteDir(childrenFullPath);
+                    }
                 }
-            }
-            boolean ret = deleteNode(path);
-            if(!ret) {
-                errorSet.add(path);
-            } else {
-                successCnt.incrementAndGet();
+                boolean ret = deleteNode(path);
+                if(!ret) {
+                    errorSet.add(path);
+                } else {
+                    successCnt.incrementAndGet();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -52,8 +56,13 @@ public class DirDeleteResult {
     public boolean deleteNode(String path) {
         boolean ret = false;
         try {
-            curatorFramework.delete().forPath(path);
-            System.out.println("delete:" + path);
+            Stat stat = curatorFramework.checkExists().forPath(path);
+            if(stat!=null) {
+                curatorFramework.delete().forPath(path);
+                System.out.println("delete:" + path);
+            } else {
+                System.out.println("node not exist path:" + path);
+            }
             ret = true;
         } catch (Exception e) {
             e.printStackTrace();
