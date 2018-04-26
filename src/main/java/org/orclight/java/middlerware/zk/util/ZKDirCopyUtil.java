@@ -4,7 +4,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.orclight.java.middlerware.zk.result.DirReadResult;
-import org.orclight.java.middlerware.zk.result.DirWriterResult;
+import org.orclight.java.middlerware.zk.result.DirCopyWriterResult;
 
 import java.util.Map;
 
@@ -25,7 +25,7 @@ public class ZKDirCopyUtil {
         CuratorFramework toZK =
                 CuratorFrameworkFactory.newClient(toZkAddress,new ExponentialBackoffRetry(1000, 3));
 
-        DirWriterResult dirWriterResult = new DirWriterResult(toZK,fromPath,toPath,dirReadResult.getAllNodeValue());
+        DirCopyWriterResult dirWriterResult = new DirCopyWriterResult(toZK,fromPath,toPath,dirReadResult.getAllNodeValue());
 
         dirWriterResult.write();
 

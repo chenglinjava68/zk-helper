@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * desc: (The role of this class is to ...)
  * To change this template use preferences | editor | File and code Templates
  */
-public class DirWriterResult {
+public class DirCopyWriterResult {
 
     CuratorFramework curatorFramework;
     private String fromPath;
@@ -27,7 +27,7 @@ public class DirWriterResult {
     private AtomicInteger addCnt = new AtomicInteger();
     private AtomicInteger updateCnt = new AtomicInteger();
 
-    public DirWriterResult(CuratorFramework curatorFramework, String fromPath, String toPath, Map<String, String> valueMap) {
+    public DirCopyWriterResult(CuratorFramework curatorFramework, String fromPath, String toPath, Map<String, String> valueMap) {
         this.curatorFramework = curatorFramework;
         this.fromPath = fromPath;
         this.toPath = toPath;
@@ -49,7 +49,7 @@ public class DirWriterResult {
                 try {
                     Stat stat = curatorFramework.checkExists().forPath(writePath);
                     if(stat==null) {
-//                        curatorFramework.checkExists().creatingParentsIfNeeded().forPath(writePath);
+                        curatorFramework.checkExists().creatingParentContainersIfNeeded().forPath(writePath);
                         curatorFramework.create().forPath(writePath,value.getBytes());
                         addCnt.incrementAndGet();
                     } else {

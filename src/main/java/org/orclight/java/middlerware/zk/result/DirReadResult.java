@@ -78,7 +78,7 @@ public class DirReadResult {
                     Map<String,String> childMap = new ConcurrentHashMap<String, String>();
                     for(String path:children) {
                         String fullPath = parentPath+"/"+path;
-                        System.out.print("level: " + level + " parentpath "+ parentPath+ "; fullpath:"+fullPath+"  ");
+//                        System.out.print("level: " + level + " parentpath "+ parentPath+ "; fullpath:"+fullPath+"  ");
 
                         stat = curatorFramework.checkExists().forPath(fullPath);
                         if(stat==null) {
@@ -96,8 +96,6 @@ public class DirReadResult {
                             }
                             childMap.put(fullPath,value);
                             valueMap.put(fullPath,value);
-
-                            System.out.println();
                             getAllChildren(fullPath,level);
                         }
                     }
